@@ -92,7 +92,10 @@ function Screen ()
 			{
 				title = "***";
 			}
-			
+			if (postList[i].comments)
+			{
+				comments_html= postList[i].comments.text;
+			}
 			title_html = '<div class="title">' + title + '</div>';
 		
 		    posts_html += title_html +
