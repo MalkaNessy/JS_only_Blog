@@ -23,7 +23,7 @@ function Model ()
 		console.log('model.load_data/*data*/ start');
 		this.data = data;// присваивает дату 
 		postList = model.posters_for_all_pages();
-		
+		console.log("model.load_data end, postList: " + postList);
 		
 	}
 	
@@ -40,6 +40,7 @@ function Model ()
 			}
 		}
 		posts = posts.reverse();
+		console.log("posters_for_all_pages, posts: " + posts);
 		return posts;
 	}
 	
