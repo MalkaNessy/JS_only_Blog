@@ -4,15 +4,23 @@ var screen_ = false;
 function Model ()
 {
 	console.log('class-defenition Model start');
- 	//содержит список постов и комментариев						
-	this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", par_id: -1}, 
+ 	//содержит список постов и комментариев	
+this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comments: {id:3, text: "comment to post 1" }},
+ 
+            1: {id:1, type: "post", text: "post2", title: "title post 2", comments:{id:4, text: "comment to post 2" }},
+			
+			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{id:5, text: "comment to post 3"  }},
+                           
+			};
+	
+	/* this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", par_id: -1}, 
                1: {id:1, type: "comment", text: "comment to post1", par_id: 0},
                6: {id:6, type: "comment", text: "comment to post1_2", par_id: 0},
                2: {id: 2, type: "post", text: "post2", title: "title post 2", par_id: -1},
                3: {id: 3, type: "comment", text: "comment to post 2", par_id: 2},
                4: {id: 4, type: "post", text: "post3", title: "title post 3", par_id: -1},
                5: {id:5, type: "comment", text: "comment to post 3", par_id: 4}
-               };
+               }; */
 			   
 	this.postList = [];
 	
@@ -34,7 +42,7 @@ function Model ()
 		var posts = [];
 		for (var key in this.data) 
 		{
-			if (this.data[key].par_id == -1)//if this is a post and not comment. I can write if (type == post)
+			if (this.data[key].type=="post")//if this is a post and not comment. I can write if (type == post)
 			{
 				posts.push (this.data[key]);
 			}
