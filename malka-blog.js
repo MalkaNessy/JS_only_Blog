@@ -76,11 +76,12 @@ function Screen ()
 		console.log("screen.show_posts_from_root start");
 		var title = "";
 		var title_html="";
-		var comments = [];
+		
 		var comments_html="comments here";
 		var posts_html="";
 		for (var i=0; i<postList.length; i++)
 		{
+			console.log("postList[i] " + postList[i]);
 			if (postList[i].title) 
 			{
 				title = postList[i].title;
@@ -91,12 +92,21 @@ function Screen ()
 			}
 			if (postList[i].comments)
 			{
+				var comments_html ="";
 				for (key in postList[i].comments)
 				{
-					comments_html= postList[i].comments[key].text;
+					
+					console.log(" for start, i = " + i + ", key: " + key);
+					var comment = postList[i].comments[key].text;
+					
+					console.log("var comment: " + comment);
+					comments_html += '<div class="comments">'+comment+'</div>';
+					console.log("for comment_html: " + comments_html);
+					
 				}
 				
 			}
+			
 			title_html = '<div class="title">' + title + '</div>';
 		
 		    posts_html += title_html +
@@ -107,7 +117,8 @@ function Screen ()
 						  '<div class="button comment_button" id="comment'+postList[i].id+'" onclick="comment_click('+postList[i].id+', \'new_post_form'+postList[i].id+'\');">Comment</div>'+
 					   '</div>'+
 						'<div class="new_post_form" id="new_post_form'+postList[i].id+'"></div>'+
-						'<div class="comments">'+comments_html+'</div>';
+						comments_html;
+						
 
 	    }
 	
