@@ -5,11 +5,11 @@ function Model ()
 {
 	console.log('class-defenition Model start');
  	//содержит список постов и комментариев	
-this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comments: {id:3, text: "comment to post 1" }},
+this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comments: {0:{id:3, text: "comment to post 1"},1:{id:6, text: "comment to post 1_2"} } },
  
-            1: {id:1, type: "post", text: "post2", title: "title post 2", comments:{id:4, text: "comment to post 2" }},
+            1: {id:1, type: "post", text: "post2", title: "title post 2", comments:{0:{id:4, text: "comment to post 2" }}},
 			
-			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{id:5, text: "comment to post 3"  }},
+			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{0:{id:5, text: "comment to post 3"  }}},
                            
 			};
 	
@@ -43,10 +43,6 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		for (var key in this.data) 
 		{
 			posts.push (this.data[key]);
-			/* if (this.data[key].type=="post")
-			{
-				posts.push (this.data[key]);
-			} */
 		}
 		posts = posts.reverse();
 		console.log("posters_for_all_pages, posts: " + posts);
@@ -80,6 +76,7 @@ function Screen ()
 		console.log("screen.show_posts_from_root start");
 		var title = "";
 		var title_html="";
+		var comments = [];
 		var comments_html="comments here";
 		var posts_html="";
 		for (var i=0; i<postList.length; i++)
@@ -94,7 +91,11 @@ function Screen ()
 			}
 			if (postList[i].comments)
 			{
-				comments_html= postList[i].comments.text;
+				for (key in postList[i].comments)
+				{
+					comments_html= postList[i].comments[key].text;
+				}
+				
 			}
 			title_html = '<div class="title">' + title + '</div>';
 		
