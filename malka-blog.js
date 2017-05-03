@@ -42,10 +42,11 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		var posts = [];
 		for (var key in this.data) 
 		{
-			if (this.data[key].type=="post")//if this is a post and not comment. I can write if (type == post)
+			posts.push (this.data[key]);
+			/* if (this.data[key].type=="post")
 			{
 				posts.push (this.data[key]);
-			}
+			} */
 		}
 		posts = posts.reverse();
 		console.log("posters_for_all_pages, posts: " + posts);
@@ -91,6 +92,7 @@ function Screen ()
 			{
 				title = "***";
 			}
+			
 			title_html = '<div class="title">' + title + '</div>';
 		
 		    posts_html += title_html +
