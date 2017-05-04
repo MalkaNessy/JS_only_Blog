@@ -64,6 +64,43 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		return comments;
     }
 	
+	//сохранение поста или комментария //save max post id
+	this.save_post = function () 
+	{
+		console.log('model.save_post start');
+		this.search_= false;//?/? maybe only add
+		if (this.mode.name =='add') 
+		{
+			var new_post_id = this.max_post_id+1;
+			var par_id = this.mode.par_id;
+			var input_title = $("#title").val();
+			var input_text = $("#textarea").val();
+					   
+			if (par_id==-1)
+			{ 
+				var new_post = {id: new_post_id, type: "post", text: input_text, title: input_title, par_id: par_id};
+			}
+			else
+				new_post = {id: new_post_id, type: "comment", text: input_text, par_id: par_id};
+			
+			this.to_read_mode();
+			this.data[new_post_id]=new_post;
+			this.max_post_id=new_post_id;
+			if (par_id==-1) {
+			  this.update_posters();
+			  this.go_to_page(1);
+			}
+			this.to_storage();
+		}
+
+		if (this.mode.name=='edit') {
+			var post_id = this.mode.post_id;
+			this.to_read_mode ();//delete all the object, not just change the state
+			this.data[post_id].title = $("#title").val();
+			this.data[post_id].text = $("#textarea").val();
+			this.to_storage();
+		}
+	}
 	
 };
 
@@ -77,7 +114,7 @@ function Screen ()
 		var title = "";
 		var title_html="";
 		
-		var comments_html="comments here";
+		//var comments_html="comments here";
 		var posts_html="";
 		for (var i=0; i<postList.length; i++)
 		{
@@ -191,7 +228,45 @@ function Screen ()
 	}
 	
 	
+	//открыть форму добавления поста
+	this.add_post_form = function ()
+	{
+		console.log("screen.add_post_form start");
+		/* var form_id = "";
+		if (model.mode.par_id == -1) 
+		{
+			var input_title_html='<input type="text" id="title">';
+			form_id = "new_root_post_form";
+		}
+		else 
+		{
+			input_title_html="";
+			form_id = "new_post_form" + model.mode.par_id;
+		} 
+		var form_id = "new_root_post_form";*/
+		var input_title_html='<input type="text" id="title">';
+		$("#new_root_post_form").html( input_title_html +
+						  '<textarea id="textarea" name="post"></textarea>'+//why need name
+						  '<div class="buttons">'+
+						  '<div class="button" onclick="save_post_click();">Save</div>'+
+						  '<div class="button" onclick="cancel_click();">Cancel</div>'+
+						  '</div>');
+		$("#textarea").cleditor();
+		//this.update_buttons();
+	}
+	
 };
+
+function add_new_post_click ()
+{ 
+	console.log("add_new_post_click start");
+	if (model.search_==false) 
+	{
+		//model.add_post_form (-1);
+		screen_.add_post_form();
+    }
+}
+
 
 $(document).ready(function()
 { 
@@ -200,4 +275,6 @@ $(document).ready(function()
 	screen_ = new Screen ();
 	model.load_data(model.data);
 	screen_.show_posts_from_root();
+	
+	$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
 });
