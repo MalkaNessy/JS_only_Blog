@@ -101,7 +101,7 @@ function Model ()
 	//удаление поста, принимает id поста
 	this.delete_post = function (post_id)
     {
-		console.log('this.delete_post /*post_id*/ start');
+		console.log('model.delete_post /*post_id*/ start');
 		delete this.data [post_id];// ??? что это такое
 		for (key in this.data) 
 		{

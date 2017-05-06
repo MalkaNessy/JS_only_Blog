@@ -12,26 +12,18 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{0:{id:5, text: "comment to post 3"  }}},
                            
 			};
-	
-	/* this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", par_id: -1}, 
-               1: {id:1, type: "comment", text: "comment to post1", par_id: 0},
-               6: {id:6, type: "comment", text: "comment to post1_2", par_id: 0},
-               2: {id: 2, type: "post", text: "post2", title: "title post 2", par_id: -1},
-               3: {id: 3, type: "comment", text: "comment to post 2", par_id: 2},
-               4: {id: 4, type: "post", text: "post3", title: "title post 3", par_id: -1},
-               5: {id:5, type: "comment", text: "comment to post 3", par_id: 4}
-               }; */
-			   
+					   
 	this.postList = [];
-	
+	this.max_post_id = 3;
 	
 	// загружает дату 
 	this.load_data = function(data) 
 	{  
 		console.log('model.load_data/*data*/ start');
 		this.data = data;// присваивает дату 
-		postList = model.posters_for_all_pages();
-		console.log("model.load_data end, postList: " + postList);
+		this.postList = model.posters_for_all_pages();
+		this.update_max_post_id(); // обновляет счетчик максимального количества записей
+		console.log("model.load_data end, postList: " + this.postList + "max_post_id: " + this.max_post_id);
 		
 	}
 	
@@ -49,68 +41,65 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		return posts;
 	}
 	
-	//показывает комментарии к данному посту
-	this.comments_to_show_list = function (post_id)
+	this.update_max_post_id = function () //вызывается из model.load_data 
 	{
-		console.log('model.comments_to_show_list /*post_id*/ start');
-		var comments = [];
-		for (var key in this.data) {
-			if (this.data[key].par_id == post_id)
+		console.log('model.update_max_post_id start');
+		var max_ = -1;
+		for (key in this.data)
+		{
+			key = parseInt (key);
+			if (max_<key) 
 			{
-				comments.push (this.data[key]);
-			}
+			   max_ = key
+			};
 		}
-		comments = comments.reverse();
-		return comments;
-    }
+		this.max_post_id = max_;
+	}
 	
 	//сохранение поста или комментария //save max post id
 	this.save_post = function () 
 	{
 		console.log('model.save_post start');
-		this.search_= false;//?/? maybe only add
-		if (this.mode.name =='add') 
-		{
 			var new_post_id = this.max_post_id+1;
-			var par_id = this.mode.par_id;
 			var input_title = $("#title").val();
 			var input_text = $("#textarea").val();
-					   
-			if (par_id==-1)
-			{ 
-				var new_post = {id: new_post_id, type: "post", text: input_text, title: input_title, par_id: par_id};
-			}
-			else
-				new_post = {id: new_post_id, type: "comment", text: input_text, par_id: par_id};
+			var new_post = {id: new_post_id, type: "post", text: input_text, title: input_title, comments: {}};
 			
-			this.to_read_mode();
+				//new_post = {id: new_post_id, type: "comment", text: input_text, par_id: par_id};
+			
+			
 			this.data[new_post_id]=new_post;
+			console.log("this.data[new_post_id]: " + this.data[new_post_id]);
 			this.max_post_id=new_post_id;
-			if (par_id==-1) {
-			  this.update_posters();
-			  this.go_to_page(1);
-			}
-			this.to_storage();
-		}
-
-		if (this.mode.name=='edit') {
-			var post_id = this.mode.post_id;
-			this.to_read_mode ();//delete all the object, not just change the state
-			this.data[post_id].title = $("#title").val();
-			this.data[post_id].text = $("#textarea").val();
-			this.to_storage();
-		}
+			this.postList = this.posters_for_all_pages();
+			console.log("save_post new data: " + this.data);
+			console.log("save_post postList: " + this.postList);
+			$("#new_root_post_form").html("");
+		    screen_.show_posts_from_root(model.postList);
+			
 	}
 	
+	//удаление поста, принимает id поста
+	this.delete_post = function (post_id)
+    {
+		console.log('model.delete_post /*post_id*/ start');
+		delete this.data [post_id];
+		
+        this.update_max_post_id();
+		this.postList = this.posters_for_all_pages();
+		screen_.show_posts_from_root(model.postList);
+     //this.to_storage();
+	}
 };
 
 
 function Screen () 
 {
 	//показ блога на странице 
-	this.show_posts_from_root = function ()
+	this.show_posts_from_root = function (postList)
 	{
-		console.log("screen.show_posts_from_root start");
+		console.log("screen.show_posts_from_root start, postList: " + postList);
+		
 		var title = "";
 		var title_html="";
 		
@@ -118,7 +107,7 @@ function Screen ()
 		var posts_html="";
 		for (var i=0; i<postList.length; i++)
 		{
-			console.log("postList[i] " + postList[i]);
+			//console.log("postList[i] " + postList[i]);
 			if (postList[i].title) 
 			{
 				title = postList[i].title;
@@ -133,12 +122,12 @@ function Screen ()
 				for (key in postList[i].comments)
 				{
 					
-					console.log(" for start, i = " + i + ", key: " + key);
+					//console.log(" for start, i = " + i + ", key: " + key);
 					var comment = postList[i].comments[key].text;
 					
-					console.log("var comment: " + comment);
+					//console.log("var comment: " + comment);
 					comments_html += '<div class="comments">'+comment+'</div>';
-					console.log("for comment_html: " + comments_html);
+					//console.log("for comment_html: " + comments_html);
 					
 				}
 				
@@ -158,92 +147,16 @@ function Screen ()
 						
 
 	    }
-	
+		console.log("show_posts_from_root end, max_post_id: " + model.max_post_id + " model.postList: " + model.postList+" postList.length:"+postList.length);
 		$("#posts").html (posts_html);
-		//return ;
+		
 	}
 		
 		
-	
-		
-
-
-	//показ постов на странице
-	this.show_posts = function (posts_to_show)
-	{
-		console.log("screen.show_posts start");
-		if (posts_to_show.length==0) 
-		{
-			return "";
-		}
-		else
-		{
-			var posts_html='';
-			var post = {};
-			for (var i=0; i<posts_to_show.length; i++)
-			{
-				post = posts_to_show[i];
-				posts_html=posts_html+'<div class="'+post.type+'" id="post'+post.id+'">'+this.show_post(post)+'</div>';
-			}
-		}
-   
-		return posts_html;
-	}
-
-	//показ одного поста
-	this.show_post = function (post)
-	{
-		console.log("screen.show_post start");
-		var title = "";
-		var title_html="";
-		var comments = model.comments_to_show_list(post.id);
-		var comments_html="";
-		if (comments.length > 0)
-		{ 
-			comments_html = 'Comments: <br>' + this.show_posts(comments);
-		}
-		if (post.type == "post") 
-		{
-			if (post.title) 
-			{
-				title = post.title;//later remake with prototype!!!!!!!
-			}
-			else 
-			{
-				title = "***";
-			}
-			title_html = '<div class="title">' + title + '</div>';
-		}
-		var post_html = title_html+
-						'<div class="post_text">'+ post.text + '</div>'+
-						'<div class="buttons">'+
-						  '<div class="button edit_button" id="edit'+post.id+'" onclick="edit_click('+post.id+');">Edit </div>'+
-						  '<div class="button delete_button" id="delete'+post.id+'" onclick="delete_click('+post.id+');">Delete </div>'+
-						  '<div class="button comment_button" id="comment'+post.id+'" onclick="comment_click('+post.id+', \'new_post_form'+post.id+'\');">Comment</div>'+
-					   '</div>'+
-						'<div class="new_post_form" id="new_post_form'+post.id+'"></div>'+
-						'<div class="comments">'+comments_html+'</div>';
-
-	  return post_html;
-	}
-	
-	
 	//открыть форму добавления поста
 	this.add_post_form = function ()
 	{
 		console.log("screen.add_post_form start");
-		/* var form_id = "";
-		if (model.mode.par_id == -1) 
-		{
-			var input_title_html='<input type="text" id="title">';
-			form_id = "new_root_post_form";
-		}
-		else 
-		{
-			input_title_html="";
-			form_id = "new_post_form" + model.mode.par_id;
-		} 
-		var form_id = "new_root_post_form";*/
 		var input_title_html='<input type="text" id="title">';
 		$("#new_root_post_form").html( input_title_html +
 						  '<textarea id="textarea" name="post"></textarea>'+//why need name
@@ -255,18 +168,72 @@ function Screen ()
 		//this.update_buttons();
 	}
 	
+	//открыть форму добавления поста
+	this.add_comment_form = function ()
+	{
+		console.log("screen.add_post_form start");
+		var input_title_html='<input type="text" id="title">';
+		$(".new_post_form").html( input_title_html +
+						  '<textarea id="textarea" name="post"></textarea>'+//why need name
+						  '<div class="buttons">'+
+						  '<div class="button" onclick="save_comment_click();">Save</div>'+
+						  '<div class="button" onclick="hide_comment_form();">Cancel</div>'+
+						  '</div>');
+		$("#textarea").cleditor();
+		//this.update_buttons();
+	}
+	
+	//спрятать форму 
+	this.hide_comment_form = function ()
+	{
+		console.log("screen.hide_form start");
+		$(".new_post_form").html("");
+	}
 };
 
 function add_new_post_click ()
 { 
 	console.log("add_new_post_click start");
-	if (model.search_==false) 
-	{
-		//model.add_post_form (-1);
-		screen_.add_post_form();
-    }
+	screen_.add_post_form();
+    
 }
 
+function save_post_click ()
+{
+	console.log("save_post_click start");
+	if ($("#textarea").val()||$("#title").val())
+	{
+		model.save_post();
+		//screen_.hide_form_show_posts();
+	}
+}
+
+function cancel_click ()
+{
+	console.log("cancel_click start");
+	screen_.hide_form();
+}
+
+ function delete_click (post_id)
+{
+	console.log("delete_click start");
+	
+		if (confirm ('Are you sure?')) 
+		{
+			model.delete_post(post_id);
+			
+			screen_.show_posts_from_root(model.postList);
+					
+		}
+	console.log("delete_click end ");
+}
+ 
+ function comment_click (post_id)
+{	
+	console.log("comment_click  start");
+	//model.add_post_form (post_id);
+	screen_.add_comment_form();
+}
 
 $(document).ready(function()
 { 
@@ -274,7 +241,8 @@ $(document).ready(function()
 	model = new Model ();
 	screen_ = new Screen ();
 	model.load_data(model.data);
-	screen_.show_posts_from_root();
+	screen_.show_posts_from_root(model.postList);
 	
 	$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
+	
 });
