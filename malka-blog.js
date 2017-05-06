@@ -169,11 +169,11 @@ function Screen ()
 	}
 	
 	//открыть форму добавления поста
-	this.add_comment_form = function ()
+	this.add_comment_form = function (post_id)
 	{
 		console.log("screen.add_post_form start");
 		var input_title_html='<input type="text" id="title">';
-		$(".new_post_form").html( input_title_html +
+		$("#new_post_form"+post_id).html( input_title_html +
 						  '<textarea id="textarea" name="post"></textarea>'+//why need name
 						  '<div class="buttons">'+
 						  '<div class="button" onclick="save_comment_click();">Save</div>'+
@@ -232,7 +232,7 @@ function cancel_click ()
 {	
 	console.log("comment_click  start");
 	//model.add_post_form (post_id);
-	screen_.add_comment_form();
+	screen_.add_comment_form(post_id);
 }
 
 $(document).ready(function()
