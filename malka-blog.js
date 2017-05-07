@@ -154,8 +154,15 @@ function Screen ()
 			}
 			if (postList[i].comments)
 			{
-				var comments_html ="";
+				var comments_list = [];
 				for (key in postList[i].comments)
+				{
+					comments_list.push (postList[i].comments[key]);
+				}
+				
+				
+				var comments_html ="";
+				for (var key = comments_list.length-1; key >= 0; key--)//key in postList[i].comments
 				{
 					
 					console.log("show_posts for, postList[ " + i + "], key: " + key);
