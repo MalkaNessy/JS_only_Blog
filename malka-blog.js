@@ -5,16 +5,17 @@ function Model ()
 {
 	console.log('class-defenition Model start');
  	//содержит список постов и комментариев	
-this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comments: {0:{id:3, text: "comment to post 1"},1:{id:6, text: "comment to post 1_2"} } },
+this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comments: {0:{id:0, text: "comment to post 1"},1:{id:1, text: "comment to post 1_1"} } },
  
-            1: {id:1, type: "post", text: "post2", title: "title post 2", comments:{0:{id:4, text: "comment to post 2" }}},
+            1: {id:1, type: "post", text: "post2", title: "title post 2", comments:{0:{id:0, text: "comment to post 2" }}},
 			
-			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{0:{id:5, text: "comment to post 3"  }}},
+			2: {id: 2, type: "post", text: "post3", title: "title post 3", comments:{0:{id:0, text: "comment to post 3"  }, 1:{id:1, text: "comment to post 3_1"  }}},
                            
 			};
 					   
 	this.postList = [];
 	this.max_post_id = 3;
+	this.max_comment_id = 5;
 	
 	// загружает дату 
 	this.load_data = function(data) 
@@ -23,11 +24,11 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		this.data = data;// присваивает дату 
 		this.postList = model.posters_for_all_pages();
 		this.update_max_post_id(); // обновляет счетчик максимального количества записей
-		console.log("model.load_data end, postList: " + this.postList + "max_post_id: " + this.max_post_id);
+		//console.log("model.load_data end, postList: " + this.postList + "max_post_id: " + this.max_post_id);
 		
 	}
 	
-	// возвращает список всех постов (не комментариев)
+	// возвращает список всех постов 
 	this.posters_for_all_pages = function () 
 	{
 		console.log('model.posters_for_all_pages start');
@@ -36,8 +37,8 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		{
 			posts.push (this.data[key]);
 		}
-		posts = posts.reverse();
-		console.log("posters_for_all_pages, posts: " + posts);
+		//posts = posts.reverse();
+		
 		return posts;
 	}
 	
@@ -56,7 +57,22 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		this.max_post_id = max_;
 	}
 	
-	//сохранение поста или комментария //save max post id
+	this.update_max_comment_id = function (post_id) //
+	{
+		console.log('model.update_max_comment_id start');
+		var max_ = -1;
+		for (key in this.data[post_id].comments)
+		{
+			key = parseInt (key);
+			if (max_<key) 
+			{
+			   max_ = key
+			};
+		}
+		this.max_comment_id = max_;
+	}
+	
+	//сохранение поста 
 	this.save_post = function () 
 	{
 		console.log('model.save_post start');
@@ -64,16 +80,14 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 			var input_title = $("#title").val();
 			var input_text = $("#textarea").val();
 			var new_post = {id: new_post_id, type: "post", text: input_text, title: input_title, comments: {}};
-			
-				//new_post = {id: new_post_id, type: "comment", text: input_text, par_id: par_id};
-			
-			
+						
 			this.data[new_post_id]=new_post;
-			console.log("this.data[new_post_id]: " + this.data[new_post_id]);
+			//console.log("this.data[new_post_id]: " + this.data[new_post_id]);
 			this.max_post_id=new_post_id;
+			
 			this.postList = this.posters_for_all_pages();
-			console.log("save_post new data: " + this.data);
-			console.log("save_post postList: " + this.postList);
+			//console.log("save_post new data: " + this.data);
+			//console.log("save_post postList: " + this.postList);
 			$("#new_root_post_form").html("");
 		    screen_.show_posts_from_root(model.postList);
 			
@@ -90,6 +104,30 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		screen_.show_posts_from_root(model.postList);
      //this.to_storage();
 	}
+	
+	//сохранение комментария
+	this.save_comment = function (post_id) 
+	{
+		console.log('model.save_comment start, post_id: ' + post_id);
+			this.update_max_comment_id(post_id);
+			console.log("max_comment_id: "+  this.max_comment_id);
+		
+			var new_comment_id = this.max_comment_id+1;
+			console.log("new_comment_id: " + new_comment_id);
+			var input_text = $("#textarea").val();
+			var new_comment = {id: new_comment_id, text: input_text};
+						
+			this.postList[post_id].comments[new_comment_id] = new_comment;
+			for (key in model.postList[post_id].comments)
+			{console.log("post_id: "+ post_id + " comments keys:" + key);
+			}
+			
+			this.max_comment_id=new_comment_id;
+			this.postList = this.posters_for_all_pages();
+			$("#new_post_form"+post_id).html("");
+		    screen_.show_posts_from_root(model.postList);
+			
+	}
 };
 
 
@@ -102,12 +140,10 @@ function Screen ()
 		
 		var title = "";
 		var title_html="";
-		
-		//var comments_html="comments here";
 		var posts_html="";
-		for (var i=0; i<postList.length; i++)
+		for (var i = postList.length-1; i >= 0; i--) //(var i=0; i<postList.length; i++)
 		{
-			//console.log("postList[i] " + postList[i]);
+			console.log("i: " + i );
 			if (postList[i].title) 
 			{
 				title = postList[i].title;
@@ -122,12 +158,13 @@ function Screen ()
 				for (key in postList[i].comments)
 				{
 					
-					//console.log(" for start, i = " + i + ", key: " + key);
+					console.log("show_posts for, postList[ " + i + "], key: " + key);
 					var comment = postList[i].comments[key].text;
+					console.log("postList[ " + i + "].comments[" + key + "].text: " + comment);
+					var comment_id = postList [i].comments[key].id;
+					//console.log("show_posts for, postList[ " + i + "].comments[" + key + "].id: " + comment_id);
+					comments_html += '<div class="comments'+comment_id+'">'+comment+'</div>';
 					
-					//console.log("var comment: " + comment);
-					comments_html += '<div class="comments">'+comment+'</div>';
-					//console.log("for comment_html: " + comments_html);
 					
 				}
 				
@@ -142,12 +179,12 @@ function Screen ()
 						  '<div class="button delete_button" id="delete'+postList[i].id+'" onclick="delete_click('+postList[i].id+');">Delete </div>'+
 						  '<div class="button comment_button" id="comment'+postList[i].id+'" onclick="comment_click('+postList[i].id+', \'new_post_form'+postList[i].id+'\');">Comment</div>'+
 					   '</div>'+
-						'<div class="new_post_form" id="new_post_form'+postList[i].id+'"></div>'+
-						comments_html;
-						
+						'<div class="new_post_form" id="new_post_form'+postList[i].id+'">'+
+						comments_html+'</div>';
+			//console.log("postList[i].comments.length:"+postList[i].comments);
 
 	    }
-		console.log("show_posts_from_root end, max_post_id: " + model.max_post_id + " model.postList: " + model.postList+" postList.length:"+postList.length);
+		console.log("show_posts_from_root end");
 		$("#posts").html (posts_html);
 		
 	}
@@ -168,7 +205,7 @@ function Screen ()
 		//this.update_buttons();
 	}
 	
-	//открыть форму добавления поста
+	//открыть форму добавления комментария
 	this.add_comment_form = function (post_id)
 	{
 		console.log("screen.add_post_form start");
@@ -176,7 +213,7 @@ function Screen ()
 		$("#new_post_form"+post_id).html( input_title_html +
 						  '<textarea id="textarea" name="post"></textarea>'+//why need name
 						  '<div class="buttons">'+
-						  '<div class="button" onclick="save_comment_click();">Save</div>'+
+						  '<div class="button" onclick="save_comment_click('+post_id+');">Save</div>'+
 						  '<div class="button" onclick="hide_comment_form();">Cancel</div>'+
 						  '</div>');
 		$("#textarea").cleditor();
@@ -235,6 +272,15 @@ function cancel_click ()
 	screen_.add_comment_form(post_id);
 }
 
+function save_comment_click (post_id)
+{
+	console.log("save_comment_click start");
+	if ($("#textarea").val()||$("#title").val())
+	{
+		model.save_comment(post_id);
+		//screen_.hide_form_show_posts();
+	}
+}
 $(document).ready(function()
 { 
 	console.log('document.ready start');
