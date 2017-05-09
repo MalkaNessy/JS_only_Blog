@@ -286,16 +286,24 @@ function add_new_post_click ()
 
 function save_post_click (post_id)
 {
-	console.log("save_post_click start");
+	console.log("save_post_click start, post_id: " + post_id);
 	if ($("#textarea").val()||$("#title").val())
 	{
-		if(post_id!==undefined)
+		console.log("save_post_click value, post_id: " + post_id);
+		
+		if(post_id===undefined)
 		{
-			model.save_edited_post(post_id);
+			console.log("post_id===undefined  " + post_id);
+			model.save_post();
+			
 		}
 		
-		//model.save_post();
-		//screen_.hide_form_show_posts();
+		else 
+		{
+			console.log("post_id !== undefined  " + post_id);
+			model.save_edited_post(post_id);
+		}
+		//;
 	}
 }
 
