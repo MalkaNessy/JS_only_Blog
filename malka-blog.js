@@ -72,7 +72,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 	//обновляет максимальное количество комментариев (нужно для добавления id к следующему комментарию)
 	this.update_max_comment_id = function (post_id) //
 	{
-		console.log('model.update_max_comment_id start');
+		console.log('model.update_max_comment_id start, post_id: ' + post_id);
 		var max_ = -1;
 		for (key in this.data[post_id].comments)
 		{
@@ -155,6 +155,41 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		    screen_.show_posts_from_root(model.postList);
 			
 	}
+	this.search_input = "";
+	//принимает инпут для поиска постов
+	this.do_search = function (input)
+	{
+		console.log('model.do_search /*input*/ start');
+		this.search_input = input;
+		console.log('this.search_input = ' + search_input);
+		this.postList = this.filter_posts();
+		console.log('model.this.do_search end, postList == ' + this.postList);
+	}
+	
+	// фильтрация постов
+	this.filter_posts = function () //just for title
+	{
+		console.log('model.filter_posts start, this.search_input == ' + this.search_input);
+		var all_posts = this.posters_for_all_pages();//???maybe save to this.posters
+		console.log('var all_posts == ' + all_posts);
+		var filtered_posters = [];
+		for (var i in all_posts) 
+		{
+			console.log('for start, i== ' + i);
+			if (all_posts[i].title.toLowerCase().indexOf(this.search_input.toLowerCase())!=-1||all_posts[i].text.toLowerCase().indexOf(this.search_input.toLowerCase())!=-1)
+			{
+				console.log('if  ' );
+				filtered_posters.push (all_posts[i]);
+			}
+		}
+		//this.posts_count=filtered_posters.length;
+		return filtered_posters;
+		console.log('model.filter_posts end, filtered_posters == ' + filtered_posters);
+	}
+	
+	
+	
+	
 };
 
 
@@ -238,7 +273,7 @@ function Screen ()
 		$("#new_post_form"+post_id).html( input_title_html +
 						  '<textarea id="textarea" name="post"></textarea>'+//why need name
 						  '<div class="buttons">'+
-						  '<div class="button" onclick="save_comment_click();">Save</div>'+
+						  '<div class="button" onclick="save_comment_click('+post_id+');">Save</div>'+
 						  '<div class="button" onclick="hide_comment_form();">Cancel</div>'+
 						  '</div>');
 		$("#textarea").cleditor();
@@ -351,6 +386,27 @@ function save_comment_click (post_id)
 		//screen_.hide_form_show_posts();
 	}
 }
+
+function search_button_click ()
+{
+	console.log("search_button_click start");
+	if ($("#search_input").val()) 
+	{
+		  var input=$("#search_input").val().toString();
+		  console.log("input: " + input);
+		  model.do_search (input);
+		  //if (model.posters.length)
+			screen_.show_posts_from_root(model.postList);
+		 // else
+		//	{
+		//		$("#posts").html("Sorry, couldn't find anything");
+		//		$("#pages").pagination("destroy");
+		//		screen_.update_buttons();
+		//	}
+		//  $(".show_all_button").show();
+	}
+}
+
 $(document).ready(function()
 { 
 	console.log('document.ready start');
@@ -360,5 +416,5 @@ $(document).ready(function()
 	screen_.show_posts_from_root(model.postList);
 	
 	$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
-	
+	$(".search_button").click (function () {search_button_click();});
 });

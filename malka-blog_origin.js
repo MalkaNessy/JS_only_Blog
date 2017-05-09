@@ -98,7 +98,7 @@ function Model ()
 		this.mode = {name: "edit", post_id: post_id}//type?????
 	}
 
-	//удаление поста, принимает id поста
+	//удаление поста
 	this.delete_post = function (post_id)
     {
 		console.log('model.delete_post /*post_id*/ start');
