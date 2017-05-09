@@ -303,7 +303,7 @@ function save_post_click (post_id)
 			console.log("post_id !== undefined  " + post_id);
 			model.save_edited_post(post_id);
 		}
-		//;
+		
 	}
 }
 
