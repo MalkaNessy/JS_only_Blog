@@ -43,12 +43,12 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 	}
 	
 	//возвращает список всех комментов к данному посту
-	this.comments_to_post = function (post_id)
+	this.comments_to_post = function (post)
 	{
 		var comments_list = [];
-		for (key in this.postList[post_id].comments)
+		for (key in post.comments)
 		{
-			comments_list.push (this.postList[post_id].comments[key]);
+			comments_list.push (post.comments[key]);
 		}
 		return comments_list;
 	}
@@ -162,12 +162,12 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		console.log('model.do_search /*input*/ start');
 		this.search_input = input;
 		console.log('this.search_input = ' + search_input);
-		this.postList = this.filter_posts();
-		console.log('model.this.do_search end, postList == ' + this.postList);
+		screen_.search_list = this.filtered_posts();
+		console.log('model.this.do_search end, screen_.search_list == ' + screen_.search_list);
 	}
 	
 	// фильтрация постов
-	this.filter_posts = function () //just for title
+	this.filtered_posts = function () //just for title
 	{
 		console.log('model.filter_posts start, this.search_input == ' + this.search_input);
 		var all_posts = this.posters_for_all_pages();//???maybe save to this.posters
@@ -195,6 +195,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 
 function Screen () 
 {
+	this.search_list = [];
 	//показ блога на странице 
 	this.show_posts_from_root = function (postList)
 	{
@@ -215,7 +216,11 @@ function Screen ()
 			}
 			if (postList[i].comments)
 			{
-				var comments_list = model.comments_to_post(i);
+				console.log("comments exists in "+i+". postList[i].comments:");
+				console.log(postList[i].comments);
+				var comments_list = model.comments_to_post(postList[i]);//postList[i].comments;
+				console.log("comments from comments_to_post("+i+") comments_list:");
+				console.log(comments_list);
 				var comments_html ="";
 				for (var key = comments_list.length-1; key >= 0; key--)//key in postList[i].comments
 				{	
@@ -396,7 +401,7 @@ function search_button_click ()
 		  console.log("input: " + input);
 		  model.do_search (input);
 		  //if (model.posters.length)
-			screen_.show_posts_from_root(model.postList);
+			screen_.show_posts_from_root(screen_.search_list);
 		 // else
 		//	{
 		//		$("#posts").html("Sorry, couldn't find anything");
