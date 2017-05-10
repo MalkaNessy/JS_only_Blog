@@ -23,6 +23,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		console.log('model.load_data/*data*/ start');
 		this.data = data;// присваивает дату 
 		this.postList = model.posters_for_all_pages();
+		this.to_storage();
 		this.update_max_post_id(); // обновляет счетчик максимального количества записей
 		//console.log("model.load_data end, postList: " + this.postList + "max_post_id: " + this.max_post_id);
 		
@@ -98,7 +99,10 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		this.max_post_id=new_post_id;
 			
 		this.postList = this.posters_for_all_pages();
-			
+		
+		this.to_storage();
+		this.update_max_post_id();
+		
 		$("#new_root_post_form").html("");
 		screen_.show_posts_from_root(model.postList);
 			
@@ -115,7 +119,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		model.data [post_id].title = input_title;
 		model.data [post_id].text = input_text;
 		console.log('model.data ['+ post_id+'].text: ' + model.data [post_id].text);
-		
+		this.to_storage();
 		$(".post_text").html("");
 		screen_.show_posts_from_root(model.postList);
 	}
@@ -128,6 +132,10 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		
         this.update_max_post_id();
 		this.postList = this.posters_for_all_pages();
+		
+		this.to_storage();
+		this.update_max_post_id();
+		
 		screen_.show_posts_from_root(model.postList);
      //this.to_storage();
 	}
@@ -187,7 +195,13 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		console.log('model.filter_posts end, filtered_posters == ' + filtered_posters);
 	}
 	
-	
+	//берет существующую дату и передает в браузер в виде списка с ключом
+	this.to_storage = function ()
+    {
+		console.log('model.to_storage start');
+		var model_json_new=JSON.stringify(model.data);
+		localStorage.setItem("posters", model_json_new);
+    }
 	
 	
 };
@@ -400,14 +414,14 @@ function search_button_click ()
 		  var input=$("#search_input").val().toString();
 		  console.log("input: " + input);
 		  model.do_search (input);
-		  //if (model.posters.length)
+		  if (screen_.search_list.length)
 			screen_.show_posts_from_root(screen_.search_list);
-		 // else
-		//	{
-		//		$("#posts").html("Sorry, couldn't find anything");
+		  else
+			{
+				$("#posts").html("Sorry, couldn't find anything");
 		//		$("#pages").pagination("destroy");
 		//		screen_.update_buttons();
-		//	}
+			}
 		//  $(".show_all_button").show();
 	}
 }
@@ -417,9 +431,29 @@ $(document).ready(function()
 	console.log('document.ready start');
 	model = new Model ();
 	screen_ = new Screen ();
-	model.load_data(model.data);
-	screen_.show_posts_from_root(model.postList);
-	
-	$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
-	$(".search_button").click (function () {search_button_click();});
+	if (typeof(Storage) !== "undefined") 
+	{
+		if (localStorage.getItem("posters"))
+		{
+			console.log('local storage contains posts');	 
+			var data_json = localStorage.getItem("posters");
+			model.load_data(JSON.parse (data_json));
+			//model.data = JSON.parse (data_json);
+		}
+		else {
+			console.log('local storage doesn\'t contains posts');
+			model.data = {};
+		}
+		//model.load_data(model.data);
+		
+		screen_.show_posts_from_root(model.postList);
+		
+				
+		$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
+		$(".search_button").click (function () {search_button_click();});
+	}
+	else 
+	{
+    alert ("Sorry, I see that you have no storage support");
+    }
 });
