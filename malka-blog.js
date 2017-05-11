@@ -498,6 +498,13 @@ function search_button_click ()
 	}
 }
 
+function show_all_button_click()
+{
+	screen_.show_posts_from_root(model.postList);
+}
+
+
+
 $(document).ready(function()
 { 
 	console.log('document.ready start');
@@ -523,6 +530,7 @@ $(document).ready(function()
 				
 		$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
 		$(".search_button").click (function () {search_button_click();});
+		$(".show_all_button").click (function () {show_all_button_click();});
 	}
 	else 
 	{
