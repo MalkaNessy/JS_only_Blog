@@ -248,7 +248,7 @@ function Screen ()
 				}
 			}
 			
-			title_html = '<div class="title">' + title + '</div>';
+			title_html = '<div class="title" onclick="show_post_click('+postList[i].id+')">' + title + '</div>';
 		
 		    posts_html +='<div class="post" id="post'+postList[i].id+'">'+ title_html +
 						'<div class="post_text">'+ postList[i].text + '</div>'+
@@ -326,10 +326,82 @@ function Screen ()
 	  //this.update_buttons();
 	}
 	
-	
+	//показ одного поста
+	this.show_post = function (post)
+	{
+		console.log("screen.show_post start, post: " + post);
+		var title = "";
+		var title_html="";
+		var post_html="";
+		if (post.title) 
+		{
+			title = post.title;
+			console.log("title == " + title);
+		}
+		else 
+		{
+			title = "***";
+		}
+		if (post.comments)
+		{
+			var comments = model.comments_to_post(post);
+			var comments_html ="";
+			for (var key = comments.length-1; key >= 0; key--)//key in postList[i].comments
+			{	
+				var comment = post.comments[key].text;
+					
+				var comment_id = post.comments[key].id;
+					
+				comments_html += '<div class="comments" id="comment'+key+comment_id+'">'+comment+'</div>';
+					
+			}
+		}
+		else 
+		{var comments_html ="";}
+			
+		title_html = '<div class="title" onclick="show_post_click('+post.id+')">' + title + '</div>';
+		
+		    post_html +='<div class="post" id="post'+post.id+'">'+ title_html +
+						'<div class="post_text">'+ post.text + '</div>'+
+						'<div class="buttons">'+
+						  '<div class="button edit_button" id="edit'+post.id+'" onclick="edit_click('+post.id+');">Edit </div>'+
+						  '<div class="button delete_button" id="delete'+post.id+'" onclick="delete_click('+post.id+');">Delete </div>'+
+						  '<div class="button comment_button" id="comment'+post.id+'" onclick="comment_click('+post.id+', \'new_post_form'+post.id+'\');">Comment</div>'+
+					   '</div>'+
+						'<div class="new_post_form" id="new_post_form'+post.id+'">'+
+						comments_html+'</div></div>';
+			
+
+	    
+		console.log("screen.show_post end");
+		
+		$("#posts").html ( post_html);
+	}
+
+
+
+
 	
 	
 };
+
+var post;
+function show_post_click(post_id)
+{
+	console.log("show_post_click start,post_id == " + post_id);
+	
+	for (key in model.data){
+		console.log ("key in model.data == " + key);
+		if (model.data[key].id == post_id){
+			console.log("model.data[key].id == " + model.data[key].id);
+			post = model.data[key];
+			console.log("post == " + post);
+		}
+	}
+	//$("#posts").html("one post");
+	
+	$("#posts").html(screen_.show_post(post));
+}
 
 function add_new_post_click ()
 { 
