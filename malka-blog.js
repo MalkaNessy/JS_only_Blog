@@ -16,7 +16,9 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 	this.postList = [];
 	this.max_post_id = 3;
 	this.max_comment_id = 5;
-	
+	this.items_on_page = 3;
+	this.first_post;
+	this.last_post;
 	// загружает дату 
 	this.load_data = function(data) 
 	{  
@@ -25,7 +27,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		this.postList = model.posters_for_all_pages();
 		this.to_storage();
 		this.update_max_post_id(); // обновляет счетчик максимального количества записей
-		//console.log("model.load_data end, postList: " + this.postList + "max_post_id: " + this.max_post_id);
+		screen_.pagination();
 		
 	}
 	
@@ -262,6 +264,12 @@ function Screen ()
 			//console.log("postList[i].comments.length:"+postList[i].comments);
 
 	    }
+		
+					
+		//screen_.pagination ();
+		
+		
+		
 		console.log("show_posts_from_root end");
 		
 		$("#posts").html ( posts_html);
@@ -378,8 +386,64 @@ function Screen ()
 		$("#posts").html ( post_html);
 	}
 
-
-
+	//берет номер страницы и вычисляет ее первый и последний пост
+     this.go_to_page = function (pageNum) 
+	{
+		console.log('screen_.go_to_page start, pageNum == ' + pageNum);
+		model.first_post = model.items_on_page*(pageNum-1);
+		model.last_post = model.first_post+model.items_on_page;
+		var posts_on_page = screen_.posts_to_show_list(model.postList);
+		return posts_on_page;
+		
+    } 
+	
+	//возвращает список постов для данной страницы
+	this.posts_to_show_list = function (postList)
+    {
+		console.log('screen_.posts_to_show_list start, postList == ' + postList);
+				
+		var posts_to_show = postList;
+		posts_to_show = posts_to_show.slice (model.first_post, model.last_post);
+		return posts_to_show;
+    }
+	
+	this.current_page = -1;
+	
+	//пагинация
+	this.pagination = function (){
+		console.log("screen.pagination start " );
+		$("#pages").pagination({
+			items: model.postList.length,
+			itemsOnPage: model.items_on_page,
+			
+			/* function this_page(pageNum){
+				model.first_post = model.items_on_page*(pageNum-1);
+				model.last_post = model.first_post+model.items_on_page;
+				var posts_on_page = screen_.posts_to_show_list(model.postList);
+				return posts_on_page;
+			} */
+			
+			onPageClick: function (pageNum) 
+				{
+					console.log("onPageClick:pageNum: " + pageNum);
+					//model.go_to_page(pageNum);
+					model.first_post = model.items_on_page*(pageNum-1);
+					console.log("first_post: " + model.first_post);
+					model.last_post = model.first_post+model.items_on_page;
+					console.log("last_post: " + model.last_post);
+					var posts_on_page = screen_.posts_to_show_list(model.postList);
+					console.log("posts_on_page: " + posts_on_page);
+					
+					screen_.show_posts_from_root(posts_on_page);
+					//model.current_page = pageNum;
+				},
+			//currentPage:model.current_page, 
+			cssStyle: 'light-theme'
+		});
+		
+		
+		console.log("screen.pagination end");
+	}
 
 	
 	
