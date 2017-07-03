@@ -19,6 +19,7 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 	this.items_on_page = 3;
 	this.first_post;
 	this.last_post;
+	this.current_page;
 	// загружает дату 
 	this.load_data = function(data) 
 	{  
@@ -70,6 +71,8 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 			};
 		}
 		this.max_post_id = max_;
+		screen_.pagination('updateItems', model.postList.length);
+		
 	}
 	
 	//обновляет максимальное количество комментариев (нужно для добавления id к следующему комментарию)
@@ -104,9 +107,10 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		
 		this.to_storage();
 		this.update_max_post_id();
+		screen_.pagination();
 		
 		$("#new_root_post_form").html("");
-		screen_.show_posts_from_root(model.postList);
+		screen_.show_posts_from_root(screen_.go_to_page(model.current_page));
 			
 	}
 	
@@ -122,8 +126,9 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		model.data [post_id].text = input_text;
 		console.log('model.data ['+ post_id+'].text: ' + model.data [post_id].text);
 		this.to_storage();
+				
 		$(".post_text").html("");
-		screen_.show_posts_from_root(model.postList);
+		screen_.show_posts_from_root(screen_.go_to_page(model.current_page));
 	}
 	
 	//удаление поста, принимает id поста
@@ -137,8 +142,9 @@ this.data = {0: {id:0, type: "post", text: "post1", title: "title post 1", comme
 		
 		this.to_storage();
 		this.update_max_post_id();
+		screen_.pagination();
 		
-		screen_.show_posts_from_root(model.postList);
+		screen_.show_posts_from_root(screen_.go_to_page(model.current_page));
      //this.to_storage();
 	}
 	
@@ -289,6 +295,14 @@ function Screen ()
 						  '<div class="button" onclick="cancel_click();">Cancel</div>'+
 						  '</div>');
 		$("#textarea").cleditor();
+		
+		$(".comment_button").addClass("disabled");
+			$(".delete_button").addClass("disabled");
+			$(".edit_button").addClass("disabled");
+			$(".search_button").addClass("disabled");
+			$(".show_all_button").addClass("disabled");
+		
+		
 		//this.update_buttons();
 	}
 	
@@ -415,29 +429,18 @@ function Screen ()
 		$("#pages").pagination({
 			items: model.postList.length,
 			itemsOnPage: model.items_on_page,
-			
-			/* function this_page(pageNum){
-				model.first_post = model.items_on_page*(pageNum-1);
-				model.last_post = model.first_post+model.items_on_page;
-				var posts_on_page = screen_.posts_to_show_list(model.postList);
-				return posts_on_page;
-			} */
-			
+						
 			onPageClick: function (pageNum) 
 				{
 					console.log("onPageClick:pageNum: " + pageNum);
-					//model.go_to_page(pageNum);
-					model.first_post = model.items_on_page*(pageNum-1);
-					console.log("first_post: " + model.first_post);
-					model.last_post = model.first_post+model.items_on_page;
-					console.log("last_post: " + model.last_post);
-					var posts_on_page = screen_.posts_to_show_list(model.postList);
+					
+					var posts_on_page = screen_.go_to_page(pageNum);
 					console.log("posts_on_page: " + posts_on_page);
 					
 					screen_.show_posts_from_root(posts_on_page);
-					//model.current_page = pageNum;
+					model.current_page = pageNum;
 				},
-			//currentPage:model.current_page, 
+			currentPage:model.current_page, 
 			cssStyle: 'light-theme'
 		});
 		
@@ -519,7 +522,7 @@ function cancel_click ()
 		{
 			model.delete_post(post_id);
 			
-			screen_.show_posts_from_root(model.postList);
+			screen_.show_posts_from_root(screen_.go_to_page(model.current_page));
 					
 		}
 	console.log("delete_click end ");
@@ -564,10 +567,24 @@ function search_button_click ()
 
 function show_all_button_click()
 {
-	screen_.show_posts_from_root(model.postList);
+	screen_.show_posts_from_root(screen_.go_to_page(model.current_page));
 }
 
-
+function cancel_click ()
+{
+	console.log("cancel_click start");
+	if (model.mode.name =='add')
+	{
+		model.to_read_mode ();
+		screen_.hide_form();
+    }
+	if (model.mode.name == 'edit')
+	{
+		screen_.hide_edit_form();
+		model.to_read_mode ()
+	}
+	screen_.update_buttons();
+ }
 
 $(document).ready(function()
 { 
@@ -589,7 +606,7 @@ $(document).ready(function()
 		}
 		//model.load_data(model.data);
 		
-		screen_.show_posts_from_root(model.postList);
+		screen_.show_posts_from_root(screen_.go_to_page(1));
 		
 				
 		$("#add_post_button").click (function () {screen_.add_post_form()});//add_new_post_click();
